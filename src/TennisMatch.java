@@ -1,10 +1,15 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import static sun.misc.Version.println;
+
 public class TennisMatch {
     Player player1, player2;
+
     MatchType matchType;
+
     boolean tieBreakInLastSet;
-    String numberOfPointWinByPlayer1 = "0", numberOfPointWinByPlayer2 = "0";
-    int numberOfSetsWinByPlayer1 = 0, numberOfSetsWinByPlayer2 = 0;
-    int numberOfGamesWinByPlayer1 = 0, numberOfGamesWinByPlayer2 = 0;
+
 
     public TennisMatch(Player player1, Player player2, MatchType matchType, boolean tieBreakInLastSet) {
         this.player1 = player1;
@@ -14,79 +19,89 @@ public class TennisMatch {
     }
 
     public void updateWithPointWonBy(Player player) {
-        if(player == player1){
-            switch (numberOfPointWinByPlayer1){
-                case "0":
-                    numberOfPointWinByPlayer1 = "15";
-                    break;
-                case "15":
-                    numberOfPointWinByPlayer1 = "30";
-                    break;
-                case "30":
-                    numberOfPointWinByPlayer1 = "40";
-                    break;
-                case "40":
-                    numberOfPointWinByPlayer1 = "A";
-                    break;
-                case "A":
-                    numberOfGamesWinByPlayer1 += 1;
-                    break;
-            }
-        } else if (player == player2){
-            switch (numberOfPointWinByPlayer2){
-                case "0":
-                    numberOfPointWinByPlayer2 = "15";
-                    break;
-                case "15":
-                    numberOfPointWinByPlayer2 = "30";
-                    break;
-                case "30":
-                    numberOfPointWinByPlayer2 = "40";
-                    break;
-                case "40":
-                    numberOfPointWinByPlayer2 = "A";
-                    break;
-                case "A":
-                    numberOfGamesWinByPlayer2 += 1;
-                    break;
-            }
+        switch (pointsForPlayer(player)) {
+            case "0":
+                player.setNumberOfPoints("15");
+                break;
+            case "15":
+                player.setNumberOfPoints("30");
+                break;
+            case "30":
+                player.setNumberOfPoints("40");
+                break;
+            case "40":
+                if (pointsForPlayer(getOtherPlayer(player)).equals("40")) {
+                    player.setNumberOfPoints("40");
+                } else if (pointsForPlayer(getOtherPlayer(player)).equals("A")) {
+                    getOtherPlayer(player).setNumberOfPoints("40");
+                } else {
+                    updateWithGameWonBy(player);
+                }
+                break;
+            case "A":
+                updateWithGameWonBy(player);
+                break;
         }
-        if (numberOfGamesWinByPlayer1 == 6){
-
-        } else if (numberOfGamesWinByPlayer2) {
-            
-        }
-
 
     }
 
-    public String pointsForPlayer(Player player) {
-        if (player == player1) {
-            return numberOfPointWinByPlayer1;
-        } else {
-            return numberOfPointWinByPlayer2;
+    public void updateWithGameWonBy(Player player) {
+        player.winGame();
+        getOtherPlayer(player).looseGame();
+        if (player.getNumberOfGames() >= 6 && player.getNumberOfGames() - getOtherPlayer(player).getNumberOfGames() >= 2) {
+            updateWithSetWonBy(player);
         }
+    }
 
+    public void updateWithSetWonBy(Player player) {
+        player.winSet();
+        getOtherPlayer(player).looseSet();
+        if (isFinished()) {
+            showWinnerAndLooser(player);
+        }
+    }
+    
+
+    private void showWinnerAndLooser(Player player) {
+        System.out.println(player.getName() + "win the match");
+        System.out.println(getOtherPlayer(player).getName() + "loose the match");
+    }
+
+
+    public String pointsForPlayer(Player player) {
+        return player.getNumberOfPoints();
     }
 
     public int currentSetNumber() {
-        return 0;
+        return player1.getNumberOfSets() + player2.getNumberOfSets() + 1;
     }
 
     public int gamesInCurrentSetForPlayer(Player player) {
-        if (player == player1) {
-            return numberOfGamesWinByPlayer1;
-        } else {
-            return numberOfGamesWinByPlayer2;
-        }
+        return player.getNumberOfGames();
     }
 
     public int gamesInSetForPlayer(int setNumber, Player player) {
-        return 0;
+        return player.getGamesInSet(setNumber);
     }
 
     public boolean isFinished() {
-        return false;
+        return true;
+    }
+
+    public boolean isLastSet() {
+        if (currentSetNumber() == matchType.maxNumberOfSets()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public Player getOtherPlayer(Player player) {
+        if (player == player1) {
+            return player2;
+        } else {
+            return player1;
+        }
     }
 
 
