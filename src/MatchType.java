@@ -14,4 +14,5 @@ public enum MatchType {
     
     public int maxNumberOfSets(){
         return numberOfSetsToWin*2 - 1;
-    } }
+    }
+}
